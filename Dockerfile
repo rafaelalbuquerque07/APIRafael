@@ -1,30 +1,74 @@
-# Etapa 1: Build da aplicação
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
+# Usar a imagem base do Ubuntu
+FROM ubuntu:20.04 AS build
 
-# Copia o arquivo de solução e restaura as dependências do NuGet
-COPY APIRafael.sln ./
-COPY APIRafael/*.csproj ./APIRafael/
+# Definir variáveis de ambiente para evitar prompts interativos durante a instalação
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalar dependências necessárias
+RUN apt-get update \
+    && apt-get install -y \
+       wget \
+       apt-transport-https \
+       software-properties-common \
+       gnupg2
+
+# Adicionar o repositório do Microsoft para MSBuild e .NET
+RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update
+
+# Instalar o .NET SDK e MSBuild
+RUN apt-get install -y dotnet-sdk-6.0 msbuild
+
+# Criar diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos do projeto para o diretório de trabalho
+COPY . .
+
+# Restaurar dependências
 RUN dotnet restore
 
-# Copia todo o conteúdo da aplicação e realiza o build
-COPY . .
-WORKDIR /src/APIRafael
-RUN dotnet build -c Release -o /app/build
+# Construir o projeto
+RUN dotnet build --no-restore -c Release
 
-# Publica a aplicação
-RUN dotnet publish -c Release -o /app/publish
+# Publicar a aplicação
+RUN dotnet publish --no-build -c Release -o /out
 
-# Etapa 2: Criação da imagem final
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
+# Imagem final para o runtime
+FROM ubuntu:20.04 AS runtime
+
+# Instalar dependências necessárias para rodar .NET
+RUN apt-get update \
+    && apt-get install -y \
+       libicu-dev \
+       libkrb5-3 \
+       zlib1g \
+       libssl1.1 \
+       liblttng-ust0 \
+       libunwind8 \
+       libuuid1 \
+       libcurl4 \
+       libgcc1 \
+       libgssapi-krb5-2 \
+       libstdc++6 \
+       libc6 \
+       libpcre3 \
+       libssl1.1 \
+       krb5-locales \
+       libcom-err2 \
+       libk5crypto3 \
+       libkeyutils1 \
+       libkrb5-3 \
+       libkrb5support0 \
+       libtirpc-dev \
+       libunwind8 \
+       zlib1g
+
 WORKDIR /app
-COPY --from=build /app/publish .
 
-# Define a variável de ambiente que aponta para a configuração de produção
-ENV ASPNETCORE_ENVIRONMENT Production
+# Copiar o output da build para o runtime
+COPY --from=build /out .
 
-# Expondo a porta que a aplicação irá rodar
-EXPOSE 80
-
-# Define o comando de entrada
+# Definir o entrypoint
 ENTRYPOINT ["dotnet", "APIRafael.dll"]
