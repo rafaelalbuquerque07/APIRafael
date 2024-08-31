@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "APIRafael", "APIRafael.csproj", "{B55A8443-DA4F-46DB-93B0-06E65653EC66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B55A8443-DA4F-46DB-93B0-06E65653EC66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B55A8443-DA4F-46DB-93B0-06E65653EC66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B55A8443-DA4F-46DB-93B0-06E65653EC66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B55A8443-DA4F-46DB-93B0-06E65653EC66}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DCA65C3E-F6AB-4D11-B59A-C730AF795DC9}
+	EndGlobalSection
+EndGlobal
