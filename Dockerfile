@@ -70,5 +70,8 @@ WORKDIR /app
 # Copiar o output da build para o runtime
 COPY --from=build /out .
 
+# Expor a porta 80
+EXPOSE 80
+
 # Definir o entrypoint
 ENTRYPOINT ["dotnet", "APIRafael.dll"]
