@@ -1,5 +1,6 @@
-using APIRafael.Repositories; // Certifique-se de importar o namespace correto
+using APIRafael.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,8 @@ builder.Services.AddSingleton<StudentRepository>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
     var connectionString = configuration.GetConnectionString("DefaultConnection");
-    return new StudentRepository(connectionString);
+    var logger = provider.GetRequiredService<ILogger<StudentRepository>>();
+    return new StudentRepository(connectionString, logger);
 });
 
 var app = builder.Build();

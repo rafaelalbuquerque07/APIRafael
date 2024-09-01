@@ -1,95 +1,117 @@
 ﻿using APIRafael.Models;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace APIRafael
 {
     public static class Students
     {
-        // Torna o campo somente leitura
-        private static readonly string connectionString = "server=localhost;user=root;database=banco;password=teste";
+        // Torna o campo readonly e simplifica a inicialização da conexão
+        private static readonly string _connectionString = "server=bcj58eqzeozhmpxgno7s-mysql.services.clever-cloud.com;port=3306;user=u2njneaa2yl7k94v;database=bcj58eqzeozhmpxgno7s;password=qOBXw7eQ0QasDnCqGEzq;SslMode=Required";
 
-        public static List<Student> GetStudents()
+        public static async Task<List<Student>> GetStudentsAsync()
         {
-            var students = new List<Student>(); // Expressão 'new' simplificada
-            using var connection = new MySqlConnection(connectionString); // Instrução 'using' simplificada
-            connection.Open();
-            string query = "SELECT * FROM alunos";
-            using var command = new MySqlCommand(query, connection); // Instrução 'using' simplificada
-            using var reader = command.ExecuteReader(); // Instrução 'using' simplificada
+            var students = new List<Student>();
 
-            while (reader.Read())
+            await using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = "SELECT * FROM alunos";
+            await using var command = new MySqlCommand(query, connection);
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
             {
-                var student = new Student
+                students.Add(new Student
                 {
                     ID = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Age = reader.GetInt32(2),
-                    FirstSemesterGrade = (double)reader.GetDecimal(3), // Conversão explícita de decimal para double
-                    SecondSemesterGrade = (double)reader.GetDecimal(4), // Conversão explícita de decimal para double
+                    FirstSemesterGrade = reader.GetDouble(3),
+                    SecondSemesterGrade = reader.GetDouble(4),
                     ProfessorName = reader.GetString(5),
                     RoomNumber = reader.GetInt32(6)
-                };
-                students.Add(student);
+                });
             }
 
             return students;
         }
 
-        public static Student AddStudent(Student student)
+        public static async Task<Student> AddStudentAsync(Student student)
         {
-            using var connection = new MySqlConnection(connectionString); // Instrução 'using' simplificada
-            connection.Open();
-            string query = "INSERT INTO alunos (nome, idade, nota_1, nota_2, professor, sala) VALUES (@name, @age, @firstSemesterGrade, @secondSemesterGrade, @professorName, @roomNumber)";
-            using var command = new MySqlCommand(query, connection); // Instrução 'using' simplificada
+            await using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = @"
+                INSERT INTO alunos (nome, idade, nota_primeiro_semestre, nota_segundo_semestre, nome_professor, numero_sala)
+                VALUES (@name, @age, @firstSemesterGrade, @secondSemesterGrade, @professorName, @roomNumber);
+                SELECT LAST_INSERT_ID();";
+
+            await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@name", student.Name);
             command.Parameters.AddWithValue("@age", student.Age);
-            command.Parameters.AddWithValue("@firstSemesterGrade", (decimal)student.FirstSemesterGrade); // Conversão explícita de double para decimal
-            command.Parameters.AddWithValue("@secondSemesterGrade", (decimal)student.SecondSemesterGrade); // Conversão explícita de double para decimal
+            command.Parameters.AddWithValue("@firstSemesterGrade", student.FirstSemesterGrade);
+            command.Parameters.AddWithValue("@secondSemesterGrade", student.SecondSemesterGrade);
             command.Parameters.AddWithValue("@professorName", student.ProfessorName);
             command.Parameters.AddWithValue("@roomNumber", student.RoomNumber);
-            command.ExecuteNonQuery();
+
+            var result = await command.ExecuteScalarAsync();
+            if (result != null)
+            {
+                student.ID = Convert.ToInt32(result);
+            }
 
             return student;
         }
 
-        public static Student UpdateStudent(int id, Student student)
+        public static async Task<Student> UpdateStudentAsync(int id, Student student)
         {
-            using var connection = new MySqlConnection(connectionString); // Instrução 'using' simplificada
-            connection.Open();
-            string query = "UPDATE alunos SET nome = @name, idade = @age, nota_1 = @firstSemesterGrade, nota_2 = @secondSemesterGrade, professor = @professorName, sala = @roomNumber WHERE id = @id";
-            using var command = new MySqlCommand(query, connection); // Instrução 'using' simplificada
+            await using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            string query = @"
+                UPDATE alunos
+                SET nome = @name, idade = @age, nota_primeiro_semestre = @firstSemesterGrade, 
+                    nota_segundo_semestre = @secondSemesterGrade, nome_professor = @professorName, 
+                    numero_sala = @roomNumber
+                WHERE id = @id;";
+
+            await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@id", id);
             command.Parameters.AddWithValue("@name", student.Name);
             command.Parameters.AddWithValue("@age", student.Age);
-            command.Parameters.AddWithValue("@firstSemesterGrade", (decimal)student.FirstSemesterGrade); // Conversão explícita de double para decimal
-            command.Parameters.AddWithValue("@secondSemesterGrade", (decimal)student.SecondSemesterGrade); // Conversão explícita de double para decimal
+            command.Parameters.AddWithValue("@firstSemesterGrade", student.FirstSemesterGrade);
+            command.Parameters.AddWithValue("@secondSemesterGrade", student.SecondSemesterGrade);
             command.Parameters.AddWithValue("@professorName", student.ProfessorName);
             command.Parameters.AddWithValue("@roomNumber", student.RoomNumber);
-            command.ExecuteNonQuery();
+
+            await command.ExecuteNonQueryAsync();
 
             return student;
         }
 
-        public static Student? GetStudentById(int id)
+        public static async Task<Student?> GetStudentByIdAsync(int id)
         {
             Student? student = null;
-            using var connection = new MySqlConnection(connectionString); // Instrução 'using' simplificada
-            connection.Open();
+
+            await using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
             string query = "SELECT * FROM alunos WHERE id = @id";
-            using var command = new MySqlCommand(query, connection); // Instrução 'using' simplificada
+            await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@id", id);
 
-            using var reader = command.ExecuteReader(); // Instrução 'using' simplificada
-            if (reader.Read())
+            await using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
                 student = new Student
                 {
                     ID = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Age = reader.GetInt32(2),
-                    FirstSemesterGrade = (double)reader.GetDecimal(3), // Conversão explícita de decimal para double
-                    SecondSemesterGrade = (double)reader.GetDecimal(4), // Conversão explícita de decimal para double
+                    FirstSemesterGrade = reader.GetDouble(3),
+                    SecondSemesterGrade = reader.GetDouble(4),
                     ProfessorName = reader.GetString(5),
                     RoomNumber = reader.GetInt32(6)
                 };
@@ -98,15 +120,16 @@ namespace APIRafael
             return student;
         }
 
-        public static bool DeleteStudent(int id)
+        public static async Task<bool> DeleteStudentAsync(int id)
         {
-            using var connection = new MySqlConnection(connectionString); // Instrução 'using' simplificada
-            connection.Open();
+            await using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+
             string query = "DELETE FROM alunos WHERE id = @id";
-            using var command = new MySqlCommand(query, connection); // Instrução 'using' simplificada
+            await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@id", id);
 
-            int rowsAffected = command.ExecuteNonQuery();
+            int rowsAffected = await command.ExecuteNonQueryAsync();
 
             return rowsAffected > 0;
         }
