@@ -1,36 +1,24 @@
-# Use a imagem oficial do .NET 6.0 SDK como base
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-# Define o diretório de trabalho dentro do container
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
+EXPOSE 80
+EXPOSE 443
 
-# Copia os arquivos de projeto e restaura as dependências
-COPY *.csproj ./
-RUN dotnet restore
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["APIRafael.csproj", "."]
+RUN dotnet restore "./APIRafael.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "./APIRafael.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Copia o resto do código-fonte
-COPY . ./
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./APIRafael.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Compila a aplicação
-RUN dotnet publish -c Debug -o out
-
-# Configura a imagem final
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM base AS final
 WORKDIR /app
-COPY --from=build-env /app/out .
-
-# Instala ferramentas de desenvolvimento adicionais
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    vim \
-    && rm -rf /var/lib/apt/lists/*
-
-# Expõe a porta 5000 para a aplicação
-EXPOSE 5000
-
-# Define a variável de ambiente para desenvolvimento
-ENV ASPNETCORE_ENVIRONMENT=Development
-
-# Comando para executar a aplicação
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "APIRafael.dll"]

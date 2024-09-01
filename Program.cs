@@ -1,17 +1,11 @@
-using APIRafael.Repositories;
+using APIRafael.Repositories; // Certifique-se de importar o namespace correto
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do Logger
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-
 // Adicionando serviços ao container
-builder.Services.AddControllers();
+builder.Services.AddRazorPages(); // Inclui suporte para Razor Pages
+builder.Services.AddControllers(); // Inclui suporte para controllers
 builder.Services.AddSwaggerGen(); // Adiciona Swagger para documentação da API
 
 // Configurando a injeção de dependências
@@ -19,21 +13,32 @@ builder.Services.AddSingleton<StudentRepository>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
     var connectionString = configuration.GetConnectionString("DefaultConnection");
-    var logger = provider.GetRequiredService<ILogger<StudentRepository>>();
-    return new StudentRepository(connectionString, logger);
+    var logger = provider.GetRequiredService<ILogger<StudentRepository>>(); // Obtém o logger
+    return new StudentRepository(connectionString, logger); // Passa o logger para o repositório
 });
 
-// Configurando o pipeline de requisições
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Configurando o pipeline de requisições
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(); // Configura o Swagger UI
+    app.UseExceptionHandler("/Error"); // Configura o tratamento de exceções para produção
+    app.UseHsts(); // Configura HSTS para segurança
 }
+else
+{
+    app.UseSwagger(); // Configura o Swagger UI no modo desenvolvimento
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapRazorPages(); // Mapeia as Razor Pages
+app.MapControllers(); // Mapeia os controllers da API
 
 app.Run();
