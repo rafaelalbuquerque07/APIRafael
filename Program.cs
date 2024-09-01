@@ -1,8 +1,14 @@
 using APIRafael.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuração do Logger
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Adicionando serviços ao container
 builder.Services.AddControllers();
@@ -17,9 +23,9 @@ builder.Services.AddSingleton<StudentRepository>(provider =>
     return new StudentRepository(connectionString, logger);
 });
 
+// Configurando o pipeline de requisições
 var app = builder.Build();
 
-// Configurando o pipeline de requisições
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
