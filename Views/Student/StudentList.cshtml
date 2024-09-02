@@ -1,0 +1,35 @@
+﻿@model List<APIRafael.Models.Student>
+
+@{
+    ViewData["Title"] = "Student List";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>First Semester Grade</th>
+            <th>Second Semester Grade</th>
+            <th>Professor Name</th>
+            <th>Room Number</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.ID</td>
+                <td>@student.Name</td>
+                <td>@student.Age</td>
+                <td>@student.FirstSemesterGrade</td>
+                <td>@student.SecondSemesterGrade</td>
+                <td>@student.ProfessorName</td>
+                <td>@student.RoomNumber</td>
+            </tr>
+        }
+    </tbody>
+</table>

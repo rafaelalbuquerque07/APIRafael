@@ -1,11 +1,11 @@
-using APIRafael.Repositories; // Certifique-se de importar o namespace correto
+using APIRafael.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Adicionando serviços ao container
 builder.Services.AddRazorPages(); // Inclui suporte para Razor Pages
-builder.Services.AddControllers(); // Inclui suporte para controllers
+builder.Services.AddControllersWithViews(); // Inclui suporte para controllers e views
 builder.Services.AddSwaggerGen(); // Adiciona Swagger para documentação da API
 
 // Configurando a injeção de dependências
@@ -40,5 +40,10 @@ app.UseAuthorization();
 
 app.MapRazorPages(); // Mapeia as Razor Pages
 app.MapControllers(); // Mapeia os controllers da API
+
+// Rotas específicas para controladores MVC
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Student}/{action=StudentList}/{id?}");
 
 app.Run();
