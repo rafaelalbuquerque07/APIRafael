@@ -1,20 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using APIRafael.Services; // Certifique-se de que o namespace do seu serviço está correto
+using APIRafael.Models; // Certifique-se de que o namespace do seu modelo está correto
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace APIRafael.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
+        private readonly StudentsService _studentsService;
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(StudentsService studentsService)
         {
-            _logger = logger;
+            _studentsService = studentsService;
+            Students = new List<Student>(); // Inicializa a propriedade
         }
 
-        public void OnGet()
+        public IList<Student> Students { get; set; }
+
+        public async Task OnGetAsync()
         {
-            _logger.LogInformation("Index page accessed at {Time}", DateTime.UtcNow);
+            Students = await _studentsService.GetAllStudentsAsync();
         }
     }
 }

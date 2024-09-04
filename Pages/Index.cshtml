@@ -8,3 +8,33 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<h2>Students List</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>First Semester Grade</th>
+            <th>Second Semester Grade</th>
+            <th>Professor Name</th>
+            <th>Room Number</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model.Students)
+        {
+            <tr>
+                <td>@student.ID</td>
+                <td>@student.Name</td>
+                <td>@student.Age</td>
+                <td>@student.FirstSemesterGrade</td>
+                <td>@student.SecondSemesterGrade</td>
+                <td>@student.ProfessorName</td>
+                <td>@student.RoomNumber</td>
+            </tr>
+        }
+    </tbody>
+</table>
