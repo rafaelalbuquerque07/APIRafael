@@ -1,5 +1,8 @@
-using APIRafael.Repositories;
+using APIRafael.Data; // Namespace onde o DbContext foi definido
+using APIRafael.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,14 +11,13 @@ builder.Services.AddRazorPages(); // Inclui suporte para Razor Pages
 builder.Services.AddControllersWithViews(); // Inclui suporte para controllers e views
 builder.Services.AddSwaggerGen(); // Adiciona Swagger para documentação da API
 
+// Configuração do Entity Framework Core com a string de conexão
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    new MySqlServerVersion(new Version(8, 0, 23)))); // Configure a versão do MySQL
+
 // Configurando a injeção de dependências
-builder.Services.AddSingleton<StudentRepository>(provider =>
-{
-    var configuration = provider.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("DefaultConnection");
-    var logger = provider.GetRequiredService<ILogger<StudentRepository>>(); // Obtém o logger
-    return new StudentRepository(connectionString, logger); // Passa o logger para o repositório
-});
+builder.Services.AddScoped<StudentsService>(); // Adiciona StudentsService para injeção de dependências
 
 var app = builder.Build();
 

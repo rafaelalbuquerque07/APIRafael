@@ -17,7 +17,7 @@ namespace APIRafael
             await using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            string query = "SELECT * FROM alunos";
+            string query = "SELECT * FROM Students";
             await using var command = new MySqlCommand(query, connection);
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -44,7 +44,7 @@ namespace APIRafael
             await connection.OpenAsync();
 
             string query = @"
-                INSERT INTO alunos (nome, idade, nota_primeiro_semestre, nota_segundo_semestre, nome_professor, numero_sala)
+                INSERT INTO Students (Name, Age, FirstSemesterGrade, SecondSemesterGrade, ProfessorName, RoomNumber)
                 VALUES (@name, @age, @firstSemesterGrade, @secondSemesterGrade, @professorName, @roomNumber);
                 SELECT LAST_INSERT_ID();";
 
@@ -71,10 +71,10 @@ namespace APIRafael
             await connection.OpenAsync();
 
             string query = @"
-                UPDATE alunos
-                SET nome = @name, idade = @age, nota_primeiro_semestre = @firstSemesterGrade, 
-                    nota_segundo_semestre = @secondSemesterGrade, nome_professor = @professorName, 
-                    numero_sala = @roomNumber
+                UPDATE Students
+                SET Name = @name, Age = @age, FirstSemesterGrade = @firstSemesterGrade, 
+                    SecondSemesterGrade = @secondSemesterGrade, ProfessorName = @professorName, 
+                    RoomNumber = @roomNumber
                 WHERE id = @id;";
 
             await using var command = new MySqlCommand(query, connection);
@@ -98,7 +98,7 @@ namespace APIRafael
             await using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            string query = "SELECT * FROM alunos WHERE id = @id";
+            string query = "SELECT * FROM Students WHERE id = @id";
             await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@id", id);
 
@@ -125,7 +125,7 @@ namespace APIRafael
             await using var connection = new MySqlConnection(_connectionString);
             await connection.OpenAsync();
 
-            string query = "DELETE FROM alunos WHERE id = @id";
+            string query = "DELETE FROM Students WHERE id = @id";
             await using var command = new MySqlCommand(query, connection);
             command.Parameters.AddWithValue("@id", id);
 
